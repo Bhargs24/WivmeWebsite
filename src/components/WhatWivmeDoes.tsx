@@ -1,6 +1,11 @@
 'use client';
 import { useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
+import ScrollIndicator from '@/components/ScrollIndicator';
+import promptImage from '@/Images/1 Student receiving a micro-revision prompt on phone.png';
+import repetitionImage from '@/Images/2 Spaced repetition schedule visualization.png';
+import dashboardImage from '@/Images/3 Teacher dashboard showing class retention data.png';
 
 /* ──────────────────────────────────────────────────────────
    WhatWivmeDoes — Feature explanation with creative motion.
@@ -23,7 +28,7 @@ import { gsap, ScrollTrigger } from '@/lib/gsap';
 export default function WhatWivmeDoes() {
   const sectionRef = useRef<HTMLElement>(null);
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
-  const wordsRef = useRef<(HTMLSpanElement | null)[]>([]);
+  const labelsRef = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     if (!sectionRef.current) return;
@@ -46,86 +51,29 @@ export default function WhatWivmeDoes() {
         });
       });
 
-      /* ─── Big words: clip-path reveal + font weight morph ─── */
-      const words = wordsRef.current.filter(Boolean) as HTMLSpanElement[];
-      words.forEach((word, i) => {
-        /* Clip-path reveal — word carves into existence from left */
+      const labels = labelsRef.current.filter(Boolean) as HTMLDivElement[];
+      labels.forEach((label, i) => {
+        const { side } = label.dataset;
         gsap.fromTo(
-          word,
-          { clipPath: 'inset(0 100% 0 0)', opacity: 0 },
+          label,
           {
-            clipPath: 'inset(0 0% 0 0)',
+            opacity: 0.15,
+            x: side === 'right' ? -240 : 240,
+            filter: 'blur(4px)',
+          },
+          {
             opacity: 1,
-            duration: 1.2,
-            ease: 'expo.out',
+            x: 0,
+            filter: 'blur(0px)',
+            ease: 'none',
             scrollTrigger: {
-              trigger: word,
-              start: 'top 85%',
-              once: true,
+              trigger: cards[i],
+              start: 'top 92%',
+              end: 'top 52%',
+              scrub: 0.9,
             },
-            delay: i * 0.18,
           }
         );
-
-        /* Variable font weight animation on scroll.
-           Inter is a variable font — its weight can be smoothly 
-           interpolated from 100 to 900 by GSAP. As the word 
-           passes through the viewport, it gains visual mass.
-           
-           Skip for serif (Instrument Serif isn't variable) and 
-           outline (uses text-stroke, not weight).              */
-        if (word.classList.contains('what-we-do__word--bold')) {
-          gsap.fromTo(
-            word,
-            { fontWeight: 100 },
-            {
-              fontWeight: 900,
-              ease: 'none',
-              scrollTrigger: {
-                trigger: word,
-                start: 'top 80%',
-                end: 'bottom 40%',
-                scrub: 1,
-              },
-            }
-          );
-        }
-
-        /* Serif word: subtle rotation settle */
-        if (word.classList.contains('what-we-do__word--serif')) {
-          gsap.fromTo(
-            word,
-            { rotateZ: -1.5 },
-            {
-              rotateZ: 0,
-              ease: 'none',
-              scrollTrigger: {
-                trigger: word,
-                start: 'top 80%',
-                end: 'bottom 40%',
-                scrub: 1,
-              },
-            }
-          );
-        }
-
-        /* Outline word: letter-spacing animation (tight → wide) */
-        if (word.classList.contains('what-we-do__word--outline')) {
-          gsap.fromTo(
-            word,
-            { letterSpacing: '-0.06em' },
-            {
-              letterSpacing: '0.04em',
-              ease: 'none',
-              scrollTrigger: {
-                trigger: word,
-                start: 'top 80%',
-                end: 'bottom 40%',
-                scrub: 1,
-              },
-            }
-          );
-        }
       });
     }, sectionRef.current);
 
@@ -135,113 +83,90 @@ export default function WhatWivmeDoes() {
   const features = [
     {
       num: '01',
-      title: 'Micro-revision prompts',
-      desc: 'Short, targeted recall questions delivered at scientifically-timed intervals after each class.',
+      title: 'Recall, the moment it matters',
+      desc: 'Short, low-effort revision moments arrive on your child’s phone exactly when memory starts to fade. Not on a calendar, not on a quiz day, but at the moment science says the lesson is most at risk of being lost.',
       color: 'violet',
       imgLabel: 'Student receiving a micro-revision prompt on phone',
+      imageSrc: promptImage,
     },
     {
       num: '02',
-      title: 'Spaced repetition engine',
-      desc: 'Built on cognitive science. Each question surfaces at the exact moment a student is about to forget.',
+      title: 'Built into the school day',
+      desc: 'Most learning apps live or die by whether your child feels like opening them. Wivme doesn’t. It’s tied to the lessons their school is actually teaching, every week. So it sticks where other apps quietly stop being used.',
       color: 'coral',
       imgLabel: 'Spaced repetition schedule visualization',
+      imageSrc: repetitionImage,
     },
     {
       num: '03',
-      title: 'Silent teacher dashboard',
-      desc: "Teachers see class-wide memory gaps without running a single extra test. No extra workload.",
+      title: 'Memory, made visible',
+      desc: 'For the first time, what your child has actually retained, not just what they sat through, becomes something you and the school can see. Weeks before the next test, not after the report card.',
       color: 'sage',
       imgLabel: 'Teacher dashboard showing class retention data',
+      imageSrc: dashboardImage,
     },
   ];
 
+  const sideLabelByNum: Record<string, string> = {
+    '01': 'Recall',
+    '02': 'Reinforce',
+    '03': 'Measure',
+  };
+
   return (
     <section ref={sectionRef} className="what-we-do" id="how">
-      <div className="container">
-        <div className="what-we-do__top">
-          <div>
-            <div
-              className="label label--violet"
-              style={{ marginBottom: 'var(--s-sm)' }}
-            >
-              How it works
-            </div>
-            <h2 className="what-we-do__headline">
-              One system.
-              <br />
-              Three <span className="serif">quiet</span> powers.
-            </h2>
-          </div>
-          <div>
-            <p className="what-we-do__body">
-              Wivme plugs into the gap between understanding and remembering. No
-              new curriculum. No class time lost. Just a layer of intelligent
-              revision that runs in the background, catching what teachers
-              can&apos;t track manually.
-            </p>
-            <div
-              className="img-ph img-ph--cream what-we-do__right-image"
-              style={{ marginTop: 'var(--s-md)' }}
-            >
-              <span>
-                Product overview: how Wivme fits into the learning flow
-              </span>
-            </div>
-          </div>
+      <div className="container what-we-do__layout">
+        <div className="what-we-do__heading-col">
+          <div className="what-we-do__label">How it works</div>
+          <h2 className="what-we-do__headline">
+            Memory you can{' '}
+            <span className="serif">finally</span> see.
+          </h2>
         </div>
 
-        <div className="what-we-do__features">
-          {features.map((f, i) => (
-            <div
-              key={i}
-              ref={(el) => {
-                cardsRef.current[i] = el;
-              }}
-              className={`what-we-do__card what-we-do__card--${f.color}`}
-            >
-              <div className="what-we-do__card-num">{f.num}</div>
-              <h3>{f.title}</h3>
-              <p>{f.desc}</p>
-              <div
-                className={`img-ph img-ph--${f.color} what-we-do__card-image`}
-              >
-                <span>{f.imgLabel}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Big typographic words — structured rebellion from Plan.md:
-            Same size, same alignment, but each word gets a completely 
-            different typographic treatment.                            */}
-        <div className="what-we-do__words-wrap">
-          <span
-            ref={(el) => {
-              wordsRef.current[0] = el;
-            }}
-            className="what-we-do__word what-we-do__word--bold"
-          >
-            Recall
-          </span>
-          <br />
-          <span
-            ref={(el) => {
-              wordsRef.current[1] = el;
-            }}
-            className="what-we-do__word what-we-do__word--serif"
-          >
-            Reinforce
-          </span>
-          <br />
-          <span
-            ref={(el) => {
-              wordsRef.current[2] = el;
-            }}
-            className="what-we-do__word what-we-do__word--outline"
-          >
-            Measure
-          </span>
+        <div className="what-we-do__cards-col">
+          <div className="what-we-do__features">
+            {features.map((f, i) => {
+              const sideLabel = sideLabelByNum[f.num];
+              return (
+                <div
+                  key={f.num}
+                  className={`what-we-do__card-wrap what-we-do__card-wrap--${f.num}`}
+                >
+                  <div
+                    className={`what-we-do__side-label what-we-do__side-label--${sideLabel.toLowerCase()}`}
+                    data-side={f.num === '02' ? 'right' : 'left'}
+                    ref={(el) => {
+                      labelsRef.current[i] = el;
+                    }}
+                    aria-hidden="true"
+                  >
+                    {sideLabel}
+                  </div>
+                  <div
+                    ref={(el) => {
+                      cardsRef.current[i] = el;
+                    }}
+                    className={`what-we-do__card what-we-do__card--${f.color}`}
+                  >
+                    <div className="what-we-do__card-num">{f.num}</div>
+                    <h3>{f.title}</h3>
+                    <p>{f.desc}</p>
+                    <div className="what-we-do__card-image">
+                      <Image
+                        src={f.imageSrc}
+                        alt={f.imgLabel}
+                        fill
+                        sizes="(max-width: 1200px) 90vw, 340px"
+                        className="what-we-do__card-image-el"
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <ScrollIndicator />
         </div>
       </div>
     </section>

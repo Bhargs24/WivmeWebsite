@@ -1,7 +1,10 @@
 'use client';
 import { useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
-import MeshGradient from './MeshGradient';
+import ScrollIndicator from './ScrollIndicator';
+import { useAudienceModal } from './AudienceModalProvider';
+import heroImage from '@/Images/Hero.png';
 
 /* ──────────────────────────────────────────────────────────
    Hero — The first impression.
@@ -19,12 +22,15 @@ import MeshGradient from './MeshGradient';
    ────────────────────────────────────────────────────────── */
 
 export default function Hero() {
+  const { openModal } = useAudienceModal();
   const sectionRef = useRef<HTMLElement>(null);
   const headlineRef = useRef<HTMLHeadingElement>(null);
+  const recallRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const subRef = useRef<HTMLParagraphElement>(null);
   const actionsRef = useRef<HTMLDivElement>(null);
-  const annotationRef = useRef<HTMLDivElement>(null);
   const visualRef = useRef<HTMLDivElement>(null);
+  const pilotPillRef = useRef<HTMLAnchorElement>(null);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -37,79 +43,65 @@ export default function Hero() {
       /* ─── Main entrance timeline ─── */
       const tl = gsap.timeline({ delay: 0.4 });
 
+      // Pilot pill drops in first
+      if (pilotPillRef.current) {
+        tl.from(pilotPillRef.current, {
+          y: -12,
+          opacity: 0,
+          duration: 0.55,
+          ease: 'expo.out',
+        });
+      }
+
       // Words reveal with staggered expo.out
       tl.to(words, {
         y: 0,
-        duration: 1.1,
+        duration: 0.95,
         ease: 'expo.out',
-        stagger: 0.09,
-      });
+        stagger: 0.07,
+      }, '-=0.2');
 
-      // Sub-headline
+      // Recall panel
       tl.from(
-        subRef.current,
-        { y: 30, opacity: 0, duration: 0.8, ease: 'expo.out' },
-        '-=0.5'
+        recallRef.current,
+        { x: -30, opacity: 0, duration: 0.7, ease: 'expo.out' },
+        '-=0.45'
       );
 
-      // Action buttons
-      tl.from(
-        actionsRef.current,
-        { y: 20, opacity: 0, duration: 0.6, ease: 'expo.out' },
-        '-=0.35'
-      );
-
-      // Handwritten annotation — "writes" in
-      tl.to(
-        annotationRef.current,
-        { opacity: 1, y: 0, duration: 0.6, ease: 'expo.out' },
-        '-=0.2'
-      );
-
-      // Visual — slides in from right
+      // Visual
       tl.from(
         visualRef.current,
-        { x: 60, opacity: 0, duration: 1, ease: 'expo.out' },
-        0.5
+        { y: 20, opacity: 0, duration: 0.85, ease: 'expo.out' },
+        '-=0.4'
       );
 
-      /* ─── "forget" memory pulse ─── 
-         After the headline reveals, the word "forget" gently 
-         pulses its opacity. This is NOT decorative — it's the 
-         product concept manifested in motion.                    */
-      const forgetEl = headline.querySelector('.hero-forget');
-      if (forgetEl) {
-        tl.to(
-          forgetEl,
-          {
-            opacity: 0.55,
-            duration: 2.5,
-            ease: 'sine.inOut',
-            yoyo: true,
-            repeat: -1,
-          },
-          '+=0.3'
-        );
-      }
+      // Value proposition block
+      tl.from(
+        contentRef.current,
+        { x: 28, opacity: 0, duration: 0.7, ease: 'expo.out' },
+        '-=0.45'
+      );
 
-      /* ─── Scroll-driven parallax ─── */
-      gsap.to(headline, {
-        y: -60,
+      // Subtle scroll depth for a serious parallax feel
+      gsap.to(headlineRef.current, {
+        y: -28,
+        ease: 'none',
         scrollTrigger: {
           trigger: section,
           start: 'top top',
           end: 'bottom top',
-          scrub: 1,
+          scrub: 0.6,
         },
       });
 
       gsap.to(visualRef.current, {
-        y: -30,
+        y: 26,
+        ease: 'none',
         scrollTrigger: {
           trigger: section,
           start: 'top top',
           end: 'bottom top',
-          scrub: 1,
+          scrub: 0.6,
         },
       });
     }, section);
@@ -119,66 +111,76 @@ export default function Hero() {
 
   return (
     <section ref={sectionRef} className="hero">
-      {/* Three.js organic gradient — replaces the flat accent block */}
-      <MeshGradient />
+      <div className="hero__inner">
+        <a ref={pilotPillRef} href="#pilot" className="hero__pilot-pill">
+          <span className="hero__pilot-pill-dot" aria-hidden />
+          Pilot now open
+          <span className="hero__pilot-pill-sep" aria-hidden>·</span>
+          Grade 8 · ICSE &amp; CBSE
+          <span className="hero__pilot-pill-arrow" aria-hidden>→</span>
+        </a>
+        <h1 ref={headlineRef} className="hero__headline">
+          <span className="word">
+            <span className="word-inner">Own</span>
+          </span>{' '}
+          <span className="word">
+            <span className="word-inner">what</span>
+          </span>{' '}
+          <span className="word">
+            <span className="word-inner">you</span>
+          </span>{' '}
+          <span className="word">
+            <span className="word-inner hero__learn">learn.</span>
+          </span>
+        </h1>
 
-      <div className="container hero__inner">
-        <div className="hero__content">
+        <div className="hero__grid">
+          <div ref={recallRef} className="hero__recall">
+            <div className="hero__recall-top">67%</div>
+            <div className="hero__recall-label">
+              of new learning is gone by tomorrow morning.
+            </div>
+            <div className="hero__days">
+              <div className="hero__day">Day 1: 100%</div>
+              <div className="hero__day">Day 7: 40%</div>
+              <div className="hero__day">Day 21: 15%</div>
+              <div className="hero__day">Day 45: 5%</div>
+            </div>
+            <div className="hero__recall-source">
+              Ebbinghaus, 1885. Replicated for 140 years.
+            </div>
+          </div>
 
-          <h1 ref={headlineRef} className="hero__headline">
-            <span className="word">
-              <span className="word-inner">Students</span>
-            </span>{' '}
-            <span className="word">
-              <span className="word-inner">understand.</span>
-            </span>
-            <br />
-            <span className="word">
-              <span className="word-inner">Then</span>
-            </span>{' '}
-            <span className="word">
-              <span className="word-inner">they</span>
-            </span>{' '}
-            <span className="word">
-              <span className="word-inner hero-forget serif">forget.</span>
-            </span>
-          </h1>
-          <p ref={subRef} className="hero__sub">
-            A simple post-class revision system that strengthens student recall
-            without extra teaching.
-          </p>
-          <div ref={actionsRef} className="hero__actions">
-            <button className="btn btn--violet">Get early access</button>
-            <button className="btn btn--outline">See how it works</button>
+          <div ref={visualRef} className="hero__visual">
+            <Image
+              src={heroImage}
+              alt="3D student with floating robot"
+              className="hero__image-main"
+              priority
+            />
           </div>
-          <div
-            ref={annotationRef}
-            className="annotation hero__annotation"
-            style={{ transform: 'translateY(10px) rotate(-2deg)' }}
-          >
-            &ldquo;and no one tracks it.&rdquo;
-          </div>
-        </div>
 
-        <div ref={visualRef} className="hero__visual">
-          <div className="img-ph img-ph--violet hero__image-main">
-            <span>
-              Hero image: student reviewing on tablet, classroom setting
-            </span>
-          </div>
-          <div className="img-ph img-ph--coral hero__image-float">
-            <span>Floating card: memory retention chart</span>
+          <div ref={contentRef} className="hero__content">
+            <p ref={subRef} className="hero__sub">
+              Schools measure what was taught.{' '}
+              <span className="hero__sub-emphasis">
+                Wivme measures what your child actually remembers.
+              </span>{' '}
+              Now in pilot for Grade 8 (ICSE &amp; CBSE). Free this academic
+              year for our founding parents.
+            </p>
+            <div ref={actionsRef} className="hero__actions">
+              <button type="button" className="btn btn--coral" onClick={() => openModal()}>
+                Register for the pilot
+              </button>
+              <a href="#pilot" className="btn btn--outline">
+                Learn more
+              </a>
+            </div>
           </div>
         </div>
       </div>
-
-      {/* Day column — the forgetting timeline */}
-      <div className="hero__sidebar">
-        <div className="hero__day">Day 1: 100%</div>
-        <div className="hero__day">Day 7: 40%</div>
-        <div className="hero__day">Day 21: 15%</div>
-        <div className="hero__day">Day 45: 5%</div>
-      </div>
+      <ScrollIndicator />
     </section>
   );
 }

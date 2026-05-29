@@ -7,9 +7,11 @@ import TheGap from '@/components/TheGap';
 import MarqueeBand from '@/components/MarqueeBand';
 import WhatWivmeDoes from '@/components/WhatWivmeDoes';
 import WhoItsFor from '@/components/WhoItsFor';
+import ThePilot from '@/components/ThePilot';
 import WhyItWorks from '@/components/WhyItWorks';
 import WhereItFits from '@/components/WhereItFits';
 import CallToAction from '@/components/CallToAction';
+import SiteFooter from '@/components/SiteFooter';
 import GrainOverlay from '@/components/GrainOverlay';
 
 /* Dynamic imports for purely client-side visual layers */
@@ -32,10 +34,12 @@ export default function Home() {
         <MarqueeBand />
         <WhatWivmeDoes />
         <WhoItsFor />
+        <ThePilot />
         <WhyItWorks />
         <WhereItFits />
         <CallToAction />
       </main>
+      <SiteFooter />
       <GrainOverlay />
     </SmoothScroll>
   );

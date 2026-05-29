@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef } from 'react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
+import { useAudienceModal } from './AudienceModalProvider';
 
 /* ──────────────────────────────────────────────────────────
    CallToAction — Character-assembly animation.
@@ -23,6 +24,7 @@ import { gsap, ScrollTrigger } from '@/lib/gsap';
    ────────────────────────────────────────────────────────── */
 
 export default function CallToAction() {
+  const { openModal } = useAudienceModal();
   const sectionRef = useRef<HTMLElement>(null);
   const headlineRef = useRef<HTMLHeadingElement>(null);
 
@@ -37,13 +39,27 @@ export default function CallToAction() {
 
       const chars: HTMLSpanElement[] = [];
 
-      text.split('').forEach((char) => {
-        const span = document.createElement('span');
-        span.textContent = char === ' ' ? '\u00A0' : char;
-        span.style.display = 'inline-block';
-        span.style.willChange = 'transform, opacity';
-        headline.appendChild(span);
-        chars.push(span);
+      /* Wrap each WORD in an inline-block container so words never
+         break mid-character. Individual characters inside still scatter. */
+      const words = text.split(' ');
+      words.forEach((word, wi) => {
+        const wordWrap = document.createElement('span');
+        wordWrap.style.display = 'inline-block';
+        wordWrap.style.whiteSpace = 'nowrap';
+
+        word.split('').forEach((char) => {
+          const charSpan = document.createElement('span');
+          charSpan.textContent = char;
+          charSpan.style.display = 'inline-block';
+          charSpan.style.willChange = 'transform, opacity';
+          wordWrap.appendChild(charSpan);
+          chars.push(charSpan);
+        });
+
+        headline.appendChild(wordWrap);
+        if (wi < words.length - 1) {
+          headline.appendChild(document.createTextNode(' '));
+        }
       });
 
       /* Scatter characters to random positions */
@@ -74,12 +90,13 @@ export default function CallToAction() {
         },
       });
 
-      /* Action buttons — simple fade after headline assembles */
-      gsap.from('.cta__actions', {
+      /* Sub + action buttons — simple fade after headline assembles */
+      gsap.from(['.cta__sub', '.cta__actions'], {
         y: 20,
         opacity: 0,
         duration: 0.7,
         ease: 'expo.out',
+        stagger: 0.08,
         scrollTrigger: {
           trigger: sectionRef.current,
           start: 'top 60%',
@@ -95,11 +112,19 @@ export default function CallToAction() {
     <section ref={sectionRef} className="cta dark-s">
       <div className="container">
         <h2 ref={headlineRef} className="cta__headline">
-          Protect learning after class.
+          Be one of the first to use Wivme.
         </h2>
+        <p className="cta__sub">
+          Free this academic year for founding parents and pilot schools. The
+          version we launch next year will be shaped by the people in the room now.
+        </p>
         <div className="cta__actions">
-          <button className="btn btn--violet">Get early access</button>
-          <button className="btn btn--outline">Talk to our team</button>
+          <button type="button" className="btn btn--coral" onClick={() => openModal('parent')}>
+            Register as a parent
+          </button>
+          <button type="button" className="btn btn--outline" onClick={() => openModal('school')}>
+            I&apos;m a school
+          </button>
         </div>
 
       </div>

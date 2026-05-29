@@ -1,6 +1,8 @@
 'use client';
 import { useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
+import ebbinghausCurveImage from '@/Images/7 Ebbinghaus curve.png';
 
 /* ──────────────────────────────────────────────────────────
    WhyItWorks — Authority section with animated stats.
@@ -82,31 +84,31 @@ export default function WhyItWorks() {
 
   const stats: StatData[] = [
     {
-      value: 87,
+      value: 67,
       suffix: '%',
       display: '0%',
-      label: 'Average retention improvement after 30 days',
+      label: 'Forgotten in 24 hours without review (Ebbinghaus, 1885)',
       color: 'violet',
     },
     {
-      value: 10,
-      suffix: '',
-      display: '0',
-      label: "Minutes per day. That's all students need.",
+      value: 80,
+      suffix: '%',
+      display: '0%',
+      label: 'Reduction in forgetting from spaced retrieval (Roediger & Butler, 2011)',
       color: 'coral',
     },
     {
-      value: 3,
-      suffix: 'x',
-      display: '0x',
-      label: 'Better test performance vs. re-reading notes',
+      value: 7,
+      suffix: ' months',
+      display: '0',
+      label: 'Of additional academic progress per student (EEF, metacognitive strategies)',
       color: 'sage',
     },
     {
-      value: 0,
+      value: 254,
       suffix: '',
       display: '0',
-      label: 'Extra hours of teacher preparation required',
+      label: 'Independent studies in the spaced-practice meta-analysis (Cepeda et al., 2006)',
       color: 'amber',
     },
   ];
@@ -128,24 +130,28 @@ export default function WhyItWorks() {
               not <span className="serif">promises.</span>
             </h2>
             <p className="why-it-works__body">
-              Spaced repetition isn&apos;t new. It&apos;s one of the most well-documented
-              findings in cognitive psychology. Wivme just makes it effortless to
-              deploy at school scale.
+              The science is settled. Memory decays on a predictable curve, and
+              well-timed retrieval can flatten it. None of this is new. It&apos;s been
+              replicated across 140 years of cognitive psychology.
             </p>
             <p className="why-it-works__body">
-              Every prompt is timed to hit the exact moment a student is about to
-              forget. That&apos;s not a feature. That&apos;s 40 years of memory research
-              working behind the scenes.
+              What&apos;s new is making it work inside an actual school day, without
+              extra study sessions, extra homework, or another app the family has
+              to fight to keep open. That&apos;s the part Wivme builds.
             </p>
-            <div
-              className="img-ph img-ph--cream why-it-works__image"
-              style={{ marginTop: 'var(--s-md)' }}
-            >
-              <span>
-                Research diagram: Ebbinghaus forgetting curve with Wivme
-                intervention points
-              </span>
+            <div className="why-it-works__image" style={{ marginTop: 'var(--s-md)' }}>
+              <Image
+                src={ebbinghausCurveImage}
+                alt="Research diagram: Ebbinghaus forgetting curve with Wivme intervention points"
+                fill
+                sizes="(max-width: 900px) 92vw, 620px"
+                className="why-it-works__image-el"
+              />
             </div>
+            <p className="why-it-works__graph-note">
+              Based on the Ebbinghaus forgetting curve model (Ebbinghaus, 1885)
+              and modern spacing-effect validation studies.
+            </p>
           </div>
 
           <div>
@@ -164,9 +170,10 @@ export default function WhyItWorks() {
               ))}
             </div>
             <p className="why-it-works__footnote">
-              Based on meta-analyses of spaced repetition studies (Cepeda et al.,
-              2006; Karpicke &amp; Blunt, 2011) and internal pilot data from 3
-              schools.
+              Sources: Ebbinghaus (1885); Cepeda et al., 2006 meta-analysis of 254
+              studies; Roediger &amp; Butler, 2011; Karpicke &amp; Roediger,{' '}
+              <em>Science</em>, 2008; Education Endowment Foundation. Our own pilot
+              data will be published openly at the end of this academic year.
             </p>
           </div>
         </div>

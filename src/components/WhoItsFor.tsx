@@ -1,6 +1,12 @@
 'use client';
 import { useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
+import ScrollIndicator from '@/components/ScrollIndicator';
+import schoolImage from '@/Images/4 School building or classroom environment.png';
+import teacherImage from '@/Images/5 Teacher reviewing dashboard.png';
+import promptImage from '@/Images/1 Student receiving a micro-revision prompt on phone.png';
+import studentImage from '@/Images/6 Student on phone reviewing prompt.png';
 
 /* ──────────────────────────────────────────────────────────
    WhoItsFor — Dark authority section with creative touches.
@@ -22,108 +28,120 @@ import { gsap, ScrollTrigger } from '@/lib/gsap';
 
 export default function WhoItsFor() {
   const sectionRef = useRef<HTMLElement>(null);
-  const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const cardsRef = useRef<(HTMLElement | null)[]>([]);
 
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
 
-    /* ─── Mouse spotlight ─── */
-    const onMouse = (e: MouseEvent) => {
-      const rect = section.getBoundingClientRect();
-      section.style.setProperty(
-        '--mouse-x',
-        `${((e.clientX - rect.left) / rect.width) * 100}%`
-      );
-      section.style.setProperty(
-        '--mouse-y',
-        `${((e.clientY - rect.top) / rect.height) * 100}%`
-      );
-    };
-    section.addEventListener('mousemove', onMouse);
-
     const ctx = gsap.context(() => {
-      /* ─── Clip-path section reveal ─── */
-      gsap.fromTo(
-        section,
-        { clipPath: 'inset(0 100% 0 0)' },
-        {
-          clipPath: 'inset(0 0% 0 0)',
-          duration: 1,
-          ease: 'expo.inOut',
-          scrollTrigger: {
-            trigger: section,
-            start: 'top 80%',
-            once: true,
-          },
-        }
-      );
+      const cards = cardsRef.current.filter(Boolean) as HTMLElement[];
+      if (cards.length < 2) return;
 
-      /* ─── Cards with physical momentum ─── */
-      const cards = cardsRef.current.filter(Boolean) as HTMLDivElement[];
-      cards.forEach((card, i) => {
-        gsap.from(card, {
-          y: 80,
-          opacity: 0,
-          duration: 0.9,
-          ease: 'back.out(1.4)',
-          scrollTrigger: {
-            trigger: card,
-            start: 'top 90%',
-            once: true,
-          },
-          delay: i * 0.15,
+      const isDesktop = window.matchMedia('(min-width: 901px)').matches;
+
+      if (!isDesktop) {
+        cards.forEach((card, i) => {
+          gsap.from(card, {
+            y: 40,
+            opacity: 0,
+            duration: 0.7,
+            ease: 'expo.out',
+            scrollTrigger: {
+              trigger: card,
+              start: 'top 88%',
+              once: true,
+            },
+            delay: i * 0.1,
+          });
         });
+        return;
+      }
+
+      gsap.set(cards, {
+        yPercent: (i) => (i === 0 ? 0 : 22),
+        autoAlpha: (i) => (i === 0 ? 1 : 0),
+        scale: (i) => 1 - i * 0.03,
+        zIndex: (i) => cards.length - i,
       });
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: 'top top',
+          end: '+=240%',
+          scrub: 1,
+          pin: true,
+          anticipatePin: 1,
+        },
+      });
+
+      for (let i = 0; i < cards.length - 1; i += 1) {
+        tl.to(
+          cards[i],
+          {
+            yPercent: -26,
+            autoAlpha: 0,
+            scale: 0.96,
+            duration: 1,
+            ease: 'none',
+          },
+          i
+        ).to(
+          cards[i + 1],
+          {
+            yPercent: 0,
+            autoAlpha: 1,
+            scale: 1,
+            duration: 1,
+            ease: 'none',
+          },
+          i + 0.06
+        );
+      }
     }, section);
 
-    return () => {
-      section.removeEventListener('mousemove', onMouse);
-      ctx.revert();
-    };
+    return () => ctx.revert();
   }, []);
 
   const personas = [
     {
       label: 'Schools',
-      labelColor: 'amber',
+      labelColor: 'violet',
       title: 'K-12 schools that care about retention',
       desc: 'Your teachers already teach well. Wivme makes sure that learning sticks beyond the classroom door.',
       imgLabel: 'School building or classroom environment',
+      imageSrc: schoolImage,
     },
     {
       label: 'Teachers',
-      labelColor: 'violet',
+      labelColor: 'coral',
       title: "Teachers who don't want more work",
-      desc: 'Zero extra preparation. Wivme generates revision prompts automatically from your existing curriculum.',
+      desc: 'No extra work for teachers. Just enable episodes and see exactly what each student is forgetting.',
       imgLabel: 'Teacher reviewing dashboard',
+      imageSrc: teacherImage,
+    },
+    {
+      label: 'Parents',
+      labelColor: 'amber',
+      title: "Parents who don't want last-minute cramming",
+      desc: 'See what your child is forgetting before exams expose it.',
+      imgLabel: 'Student revising on phone at home',
+      imageSrc: studentImage,
     },
     {
       label: 'Students',
-      labelColor: 'coral',
+      labelColor: 'sage',
       title: 'Students who want to actually remember',
       desc: "10 minutes a day. That's all it takes. Short, targeted prompts that fit between classes.",
-      imgLabel: 'Student on phone reviewing prompt',
+      imgLabel: 'Student receiving a micro-revision prompt on phone',
+      imageSrc: promptImage,
     },
   ];
 
   return (
-    <section
-      ref={sectionRef}
-      className="who-its-for"
-      id="who"
-      style={{
-        background: `
-          radial-gradient(
-            circle 500px at var(--mouse-x, 50%) var(--mouse-y, 50%),
-            rgba(99, 70, 230, 0.07),
-            transparent
-          ),
-          var(--c-charcoal)
-        `,
-      }}
-    >
-      <div className="container">
+    <section ref={sectionRef} className="who-its-for" id="who">
+      <div className="container-full who-its-for__layout">
         <div className="label" style={{ color: 'var(--c-amber)' }}>
           <span
             style={{
@@ -145,28 +163,39 @@ export default function WhoItsFor() {
           <br />
           learning chain.
         </h2>
-        <div className="who-its-for__grid">
+
+        <div className="who-its-for__stack">
           {personas.map((p, i) => (
-            <div
-              key={i}
+            <article
+              key={p.label}
               ref={(el) => {
                 cardsRef.current[i] = el;
               }}
-              className="who-its-for__card"
+              className={`who-its-for__shuffle-card who-its-for__shuffle-card--${p.labelColor}`}
             >
-              <div className="img-ph img-ph--dark who-its-for__card-image">
-                <span>{p.imgLabel}</span>
+              <div className="who-its-for__shuffle-media">
+                <Image
+                  src={p.imageSrc}
+                  alt={p.imgLabel}
+                  fill
+                  sizes="(max-width: 900px) 92vw, 420px"
+                  className="who-its-for__shuffle-image"
+                />
               </div>
-              <div
-                className={`who-its-for__card-label who-its-for__card-label--${p.labelColor}`}
-              >
-                {p.label}
+
+              <div className="who-its-for__shuffle-content">
+                <div
+                  className={`who-its-for__card-label who-its-for__card-label--${p.labelColor}`}
+                >
+                  {p.label}
+                </div>
+                <h3>{p.title}</h3>
+                <p>{p.desc}</p>
               </div>
-              <h3>{p.title}</h3>
-              <p>{p.desc}</p>
-            </div>
+            </article>
           ))}
         </div>
+        <ScrollIndicator tone="dark" />
       </div>
     </section>
   );

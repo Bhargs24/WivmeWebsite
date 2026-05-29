@@ -82,6 +82,13 @@ export default function MemoryParticles({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    /* Skip the canvas entirely on small / low-power devices.
+       The narrative copy still lands; we just save the battery. */
+    const isSmallScreen = window.matchMedia('(max-width: 768px)').matches;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isSmallScreen || prefersReducedMotion) return;
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 

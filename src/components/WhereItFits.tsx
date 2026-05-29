@@ -1,62 +1,115 @@
 'use client';
 import { useEffect, useRef } from 'react';
-import { gsap, ScrollTrigger } from '@/lib/gsap';
-
-/* ──────────────────────────────────────────────────────────
-   WhereItFits — Flow diagram with SVG path drawing.
-   
-   Creative choices:
-   1. SVG arrow paths draw themselves as the section enters 
-      the viewport, using GSAP to animate strokeDashoffset. 
-      This is a Paper.js-precision concept executed with 
-      SVG + GSAP — the connections between steps feel like 
-      they're being drawn by hand in real-time.
-   2. Steps enter with back.out overshoot — physical momentum.
-   3. The sage-green background creates warmth and variety in 
-      the page's color rhythm.
-   ────────────────────────────────────────────────────────── */
+import Image from 'next/image';
+import { gsap } from '@/lib/gsap';
+import ScrollIndicator from './ScrollIndicator';
+import classImage from '@/Images/8 class.png';
+import wivmeImage from '@/Images/9 wivme.png';
+import examImage from '@/Images/10 exam.png';
 
 export default function WhereItFits() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const arrowsRef = useRef<(SVGPathElement | null)[]>([]);
+  const sectionRef    = useRef<HTMLElement>(null);
+  const classCardRef  = useRef<HTMLDivElement>(null);
+  const wivmeCardRef  = useRef<HTMLDivElement>(null);
+  const examCardRef   = useRef<HTMLDivElement>(null);
+  const arrow1WrapRef = useRef<HTMLDivElement>(null);
+  const arrow2WrapRef = useRef<HTMLDivElement>(null);
+  const arrow1PathRef = useRef<SVGPathElement>(null);
+  const arrow2PathRef = useRef<SVGPathElement>(null);
 
   useEffect(() => {
     if (!sectionRef.current) return;
 
     const ctx = gsap.context(() => {
-      /* ─── SVG path drawing ─── */
-      const paths = arrowsRef.current.filter(Boolean) as SVGPathElement[];
-      paths.forEach((path, i) => {
-        const length = path.getTotalLength();
-        gsap.set(path, {
-          strokeDasharray: length,
-          strokeDashoffset: length,
-        });
+      const getPathLength = (path: SVGPathElement | null) => {
+        if (!path || typeof path.getTotalLength !== 'function') return null;
+        try {
+          const len = path.getTotalLength();
+          return Number.isFinite(len) && len > 0 ? len : null;
+        } catch {
+          return null;
+        }
+      };
+
+      const classImageEl = classCardRef.current?.querySelector<HTMLElement>('.where-it-fits__step-image');
+      const wivmeImageEl = wivmeCardRef.current?.querySelector<HTMLElement>('.where-it-fits__step-image');
+      const examImageEl = examCardRef.current?.querySelector<HTMLElement>('.where-it-fits__step-image');
+
+      /* ─── Initial state: side cards squeezed inward, center card hidden underneath ─── */
+      gsap.set(classCardRef.current, { x: 210, zIndex: 3 });
+      gsap.set(examCardRef.current, { x: -210, zIndex: 3 });
+      gsap.set(wivmeCardRef.current, {
+        y: 140,
+        autoAlpha: 0,
+        scale: 0.78,
+        zIndex: 1,
+      });
+      gsap.set([arrow1WrapRef.current, arrow2WrapRef.current], {
+        autoAlpha: 0,
+        scaleX: 0.6,
+      });
+      if (classImageEl) {
+        gsap.set(classImageEl, { scale: 1.12, yPercent: 6, transformOrigin: 'center center' });
+      }
+      if (wivmeImageEl) {
+        gsap.set(wivmeImageEl, { scale: 1.22, yPercent: 12, transformOrigin: 'center center' });
+      }
+      if (examImageEl) {
+        gsap.set(examImageEl, { scale: 1.12, yPercent: 6, transformOrigin: 'center center' });
+      }
+
+      /* ─── Prepare arrow paths for drawing ─── */
+      [arrow1PathRef.current, arrow2PathRef.current].forEach((path) => {
+        const len = getPathLength(path);
+        if (!path || !len) return;
+        gsap.set(path, { strokeDasharray: len, strokeDashoffset: len });
+      });
+
+      /* ─── Scroll-scrubbed spread + rise timeline ─── */
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top 78%',
+          end: 'bottom 18%',
+          scrub: 2,
+        },
+      });
+
+      tl
+        .to(classCardRef.current, { x: 0, ease: 'power2.out' }, 0)
+        .to(examCardRef.current, { x: 0, ease: 'power2.out' }, 0)
+        .to(wivmeCardRef.current, { y: 18, autoAlpha: 0.78, scale: 0.9, ease: 'power2.out' }, 0.18)
+        .set(wivmeCardRef.current, { zIndex: 4 }, 0.46)
+        .to(wivmeCardRef.current, { y: 0, autoAlpha: 1, scale: 1, ease: 'power2.out' }, 0.46)
+        .to([arrow1WrapRef.current, arrow2WrapRef.current], { autoAlpha: 1, scaleX: 1, ease: 'power2.out' }, 0.76);
+
+      if (classImageEl) {
+        tl.to(classImageEl, { scale: 1.04, yPercent: 0, ease: 'power2.out' }, 0);
+      }
+
+      if (examImageEl) {
+        tl.to(examImageEl, { scale: 1.04, yPercent: 0, ease: 'power2.out' }, 0);
+      }
+
+      if (wivmeImageEl) {
+        tl.to(wivmeImageEl, { scale: 1.06, yPercent: 0, ease: 'power2.out' }, 0.12);
+      }
+
+      /* ─── Arrow path drawing fires once Wivme is settled ─── */
+      [arrow1PathRef.current, arrow2PathRef.current].forEach((path, i) => {
+        const len = getPathLength(path);
+        if (!path || !len) return;
         gsap.to(path, {
           strokeDashoffset: 0,
           duration: 1.2,
           ease: 'expo.out',
+          delay: i * 0.3,
           scrollTrigger: {
             trigger: sectionRef.current,
-            start: 'top 60%',
+            start: 'top 28%',
             once: true,
           },
-          delay: 0.3 + i * 0.4,
         });
-      });
-
-      /* ─── Steps entrance ─── */
-      gsap.from('.where-it-fits__step', {
-        y: 30,
-        opacity: 0,
-        duration: 0.7,
-        ease: 'back.out(1.3)',
-        stagger: 0.15,
-        scrollTrigger: {
-          trigger: '.where-it-fits__flow',
-          start: 'top 80%',
-          once: true,
-        },
       });
 
       /* ─── Tagline entrance ─── */
@@ -67,7 +120,7 @@ export default function WhereItFits() {
         ease: 'expo.out',
         scrollTrigger: {
           trigger: '.where-it-fits__tagline',
-          start: 'top 85%',
+          start: 'top 88%',
           once: true,
         },
       });
@@ -84,55 +137,88 @@ export default function WhereItFits() {
         </div>
 
         <div className="where-it-fits__flow">
-          <div className="where-it-fits__step">Class</div>
+          <article ref={classCardRef} className="where-it-fits__step-card where-it-fits__step-card--class">
+            <div className="where-it-fits__step-media">
+              <Image
+                src={classImage}
+                alt="Students in class during a lesson"
+                fill
+                sizes="(max-width: 640px) 90vw, (max-width: 1100px) 34vw, 300px"
+                className="where-it-fits__step-image"
+              />
+            </div>
+            <div className="where-it-fits__step-body">
+              <div className="where-it-fits__step-kicker">Before</div>
+              <h3 className="where-it-fits__step-title">Class</h3>
+              <p className="where-it-fits__step-copy">
+                Teaching happens here. Understanding begins here. But retention usually does not.
+              </p>
+            </div>
+          </article>
 
-          {/* SVG arrow — draws itself on scroll */}
-          <svg
-            width="80"
-            height="24"
-            viewBox="0 0 80 24"
-            fill="none"
-            style={{ flexShrink: 0 }}
-            aria-hidden="true"
-          >
-            <path
-              ref={(el) => {
-                arrowsRef.current[0] = el;
-              }}
-              d="M2 12 L68 12 L58 4 M68 12 L58 20"
-              stroke="var(--c-sage)"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-
-          <div className="where-it-fits__step where-it-fits__step--highlight">
-            Wivme
+          <div ref={arrow1WrapRef} className="where-it-fits__arrow-wrap" aria-hidden="true">
+            <svg width="80" height="24" viewBox="0 0 80 24" fill="none">
+              <path
+                ref={arrow1PathRef}
+                d="M2 12 L68 12 L58 4 M68 12 L58 20"
+                stroke="var(--c-sage)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </div>
 
-          {/* SVG arrow — draws itself on scroll */}
-          <svg
-            width="80"
-            height="24"
-            viewBox="0 0 80 24"
-            fill="none"
-            style={{ flexShrink: 0 }}
-            aria-hidden="true"
-          >
-            <path
-              ref={(el) => {
-                arrowsRef.current[1] = el;
-              }}
-              d="M2 12 L68 12 L58 4 M68 12 L58 20"
-              stroke="var(--c-sage)"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <article ref={wivmeCardRef} className="where-it-fits__step-card where-it-fits__step-card--highlight">
+            <div className="where-it-fits__step-media where-it-fits__step-media--highlight">
+              <Image
+                src={wivmeImage}
+                alt="Wivme revision prompts delivered between class and exam"
+                fill
+                sizes="(max-width: 640px) 90vw, (max-width: 1100px) 34vw, 300px"
+                className="where-it-fits__step-image"
+              />
+            </div>
+            <div className="where-it-fits__step-body where-it-fits__step-body--highlight">
+              <div className="where-it-fits__step-kicker where-it-fits__step-kicker--highlight">Between</div>
+              <h3 className="where-it-fits__step-title">Wivme</h3>
+              <p className="where-it-fits__step-copy where-it-fits__step-copy--highlight">
+                The memory layer that quietly reinforces key ideas after class, before forgetting wins.
+              </p>
+            </div>
+          </article>
 
-          <div className="where-it-fits__step">Exam</div>
+          <div ref={arrow2WrapRef} className="where-it-fits__arrow-wrap" aria-hidden="true">
+            <svg width="80" height="24" viewBox="0 0 80 24" fill="none">
+              <path
+                ref={arrow2PathRef}
+                d="M2 12 L68 12 L58 4 M68 12 L58 20"
+                stroke="var(--c-sage)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+
+          <article ref={examCardRef} className="where-it-fits__step-card where-it-fits__step-card--exam">
+            <div className="where-it-fits__step-media">
+              <Image
+                src={examImage}
+                alt="Students taking an exam"
+                fill
+                sizes="(max-width: 640px) 90vw, (max-width: 1100px) 34vw, 300px"
+                className="where-it-fits__step-image"
+              />
+            </div>
+            <div className="where-it-fits__step-body">
+              <div className="where-it-fits__step-kicker">After</div>
+              <h3 className="where-it-fits__step-title">Exam</h3>
+              <p className="where-it-fits__step-copy">
+                Retrieval happens here. Wivme improves what students can actually bring back at this moment.
+              </p>
+            </div>
+          </article>
         </div>
 
         <p className="where-it-fits__tagline">
@@ -140,12 +226,7 @@ export default function WhereItFits() {
           <span className="serif">Wivme works in silence.</span>
         </p>
 
-        <div className="img-ph img-ph--sage where-it-fits__image">
-          <span>
-            Timeline diagram showing Wivme&apos;s position in the learning
-            workflow
-          </span>
-        </div>
+        <ScrollIndicator />
       </div>
     </section>
   );

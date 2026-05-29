@@ -2,6 +2,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import MemoryParticles from './MemoryParticles';
+import ScrollIndicator from './ScrollIndicator';
 
 /* ──────────────────────────────────────────────────────────
    TheGap — Pinned scroll narrative with generative canvas.
@@ -75,10 +76,10 @@ export default function TheGap() {
   }, []);
 
   const lineData = [
-    { text: 'Your students understand the lesson.', cls: '' },
-    { text: 'Then they forget. Within days.', cls: '' },
-    { text: '80% gone in 48 hours.', cls: 'the-gap__line--accent' },
-    { text: "No one tracks what they've lost.", cls: 'the-gap__line--small' },
+    { text: 'Your child understands the lesson.', cls: '' },
+    { text: 'Then they forget. Within hours.', cls: '' },
+    { text: '67% gone by tomorrow.', cls: 'the-gap__line--accent' },
+    { text: "No one was tracking what was lost. Until now.", cls: 'the-gap__line--small' },
   ];
 
   const barColors = ['#6346E6', '#8B71F0', '#B9A5F7', '#D4C8FB', '#E5DFFC'];
@@ -129,6 +130,8 @@ export default function TheGap() {
         >
           &ldquo;this is the gap.&rdquo;
         </div>
+
+        <ScrollIndicator />
       </div>
     </div>
   );
